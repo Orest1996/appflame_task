@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import {removeUser} from '../../../app/actions/users';
+import {Navigation} from 'react-native-navigation';
+import {removeUser, toggleLikeUser} from '../../../app/actions/users';
 import {TUser} from '../../../app/API';
 import {fetchUsersThunk} from '../../../app/asyncActions/users';
 import {DEFAULT_USERS_LIMIT} from '../../../app/constants';
@@ -9,11 +10,15 @@ import {useAppDispatch, useAppSelector, useUsersListData} from '../../../app/hoo
 import {COMMON_STYLES} from '../../../styles';
 
 import FindInput from './FindInput';
-import {Loader} from './Loader/Loader';
+import {Loader} from '../../../components';
 import Pagination from './Pagination';
 import {UserItem} from './UserItem';
 
-function UsersList() {
+interface IUsersList {
+    componentId: string;
+}
+
+const UsersList = ({componentId}: IUsersList) => {
     const [filter, setFilter] = React.useState('');
     const dispatch = useAppDispatch();
     const [currentPage, setCurrentPage] = useState(1);
@@ -21,7 +26,8 @@ function UsersList() {
 
     const dataProps = useMemo(() => ({cursor, filter}), [cursor, filter]);
     const {users, usersLength} = useUsersListData(dataProps);
-    const status = useAppSelector(state => state.users.status);
+    const status = useAppSelector(state => state.users.usersStatus);
+    console.log('home status', status);
 
     useEffect(() => {
         dispatch(fetchUsersThunk());
@@ -36,17 +42,43 @@ function UsersList() {
         [dispatch],
     );
 
+    const handleLikeUser = useCallback(
+        (id: number) => {
+            dispatch(toggleLikeUser(id));
+        },
+        [dispatch],
+    );
+
     const handleFindChange = useCallback((text: string) => {
         setFilter(text);
     }, []);
 
+    const handleNavigateToUserDetails = useCallback(
+        (userId: number) => {
+            Navigation.push<{userId: number}>(componentId, {
+                component: {
+                    name: 'User',
+                    passProps: {
+                        userId,
+                    },
+                },
+            });
+        },
+        [componentId],
+    );
+
     const renderItem = useCallback(
         (item: TUser) => (
             <View key={item.id} style={styles.itemWrapper}>
-                <UserItem onRemove={handleRemoveUser} item={item} />
+                <UserItem
+                    onRemove={handleRemoveUser}
+                    onGoToUserDetails={handleNavigateToUserDetails}
+                    onLike={handleLikeUser}
+                    item={item}
+                />
             </View>
         ),
-        [handleRemoveUser],
+        [handleRemoveUser, handleNavigateToUserDetails, handleLikeUser],
     );
 
     return (
@@ -69,7 +101,7 @@ function UsersList() {
             </View>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     root: {flex: 1},

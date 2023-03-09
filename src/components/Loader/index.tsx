@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 
-export function Loader() {
+function Loader() {
     return (
         <View style={styles.root}>
             <ActivityIndicator size="large" />
@@ -16,3 +16,5 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 });
+
+export default Loader;

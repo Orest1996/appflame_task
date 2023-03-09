@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-export function ImagePlaceholder() {
+function ImagePlaceholder() {
     return <View style={styles.root} />;
 }
 
@@ -14,3 +14,5 @@ const styles = StyleSheet.create({
         borderRadius: 16,
     },
 });
+
+export default ImagePlaceholder;
